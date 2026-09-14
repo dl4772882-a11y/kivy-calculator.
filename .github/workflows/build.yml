@@ -19,12 +19,14 @@ jobs:
       - name: Accept Android Licenses & Build
         run: |
           export PATH=$PATH:~/.local/bin
-          # 1. Скачиваем SDK, чтобы инструмент лицензий стал доступен
+          # 1. Заставляем Buildozer скачать SDK
           buildozer android precaches || true
-          # 2. Намертво принимаем абсолютно все лицензии Google через официальный SDK Manager
-          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          # 3. Запускаем чистую сборку приложения
-          buildozer -v android debug
+          
+          # 2. Хитрый поиск: находим sdkmanager, где бы он ни прятался, и принимаем ВСЕ лицензии
+          find $HOME/.buildozer/ -name "sdkmanager" -exec sh -c 'yes | {} --licenses' \; || true
+          
+          # 3. Финальный запуск сборки
+          yes | buildozer -v android debug
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
