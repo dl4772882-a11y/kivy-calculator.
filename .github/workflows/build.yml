@@ -16,11 +16,15 @@ jobs:
         run: |
           pip3 install --user --upgrade buildozer cython==0.29.33 sh
 
-      - name: Build with Buildozer
+      - name: Accept Android Licenses & Build
         run: |
           export PATH=$PATH:~/.local/bin
-          # Эта команда автоматически введет "yes" на любые вопросы лицензий Android
-          yes | buildozer -v android debug
+          # 1. Скачиваем SDK, чтобы инструмент лицензий стал доступен
+          buildozer android precaches || true
+          # 2. Намертво принимаем абсолютно все лицензии Google через официальный SDK Manager
+          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # 3. Запускаем чистую сборку приложения
+          buildozer -v android debug
           
       - name: Upload APK
         uses: actions/upload-artifact@v4
